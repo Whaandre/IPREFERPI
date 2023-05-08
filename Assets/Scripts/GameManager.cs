@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System;
 
 public class GameManager : MonoBehaviour
 {
@@ -8,9 +9,10 @@ public class GameManager : MonoBehaviour
     private int cursor;
     private string[] panels_names = { "Menu", "PiDigits", "Setting", "Highscore" };
     private string[] setting_names = { "Guide", "Timer", "Speedrun" };
-    private string[,] setting_options = { { "On", "Off", "/" }, { "30s", "60s", "\u221E"}, { "100th", "150th", "200th" } };
+    private string[,] setting_options = { { "Off", "On", "/", "/" }, { "X", "30s", "60s", "/" }, { "X", "100", "150", "200" } };
     private int[] setting_values = { 0, 0, 0 };
-    private int[] setting_values_max = { 1, 2, 2 };
+    private int[] setting_values_max = { 1, 2, 3 };
+    private int[] keypad_values = { -1, 0, -1, 7, 8, 9, 4, 5, 6, 1, 2, 3 };
     public Button[] setting_buttons;
     public TextMeshProUGUI[] setting_buttons_texts;
     public TextMeshProUGUI user_input;
@@ -53,25 +55,12 @@ public class GameManager : MonoBehaviour
 
     private void keypad_clicked(int index)
     {
-        if (9 <= index && index <= 11)
+        if (keypad_values[index] != -1)
         {
-            check_pidigit(index-8);
-        }
-        else if (6 <= index && index <= 8)
-        {
-            check_pidigit(index - 2);
-        }
-        else if (3 <= index && index <= 5)
-        {
-            check_pidigit(index + 4);
-        }
-        else if (index == 2)
+            check_pidigit(keypad_values[index]);
+        } else if (index == 2)
         {
             panels[0].SetActive(true);
-        }
-        else if (index == 1)
-        {
-            check_pidigit(0);
         }
     }
 
@@ -102,6 +91,23 @@ public class GameManager : MonoBehaviour
         input += 48;
         if (input == pi[cursor])
         {
+            if (setting_values[0] == 1)
+            {
+                ColorBlock colors = keypad_buttons[0].colors;
+                colors.normalColor = Color.white;
+                colors.highlightedColor = new Color32(245, 245, 245, 255);
+                keypad_buttons[Array.IndexOf(keypad_values, pi[cursor] - 48)].colors = colors;
+                colors.normalColor = Color.red;
+                colors.highlightedColor = new Color32(255, 100, 100, 255);
+                keypad_buttons[Array.IndexOf(keypad_values, pi[cursor + 1] - 48)].colors = colors;
+            }
+            if (setting_values[2] != 0)
+            {
+                if (int.Parse(setting_options[2, setting_values[2]]) == cursor + 1)
+                {
+                    GameClear();
+                }
+            }
             user_input.text += pi[cursor];
             if (cursor == 0)
             {
@@ -111,11 +117,20 @@ public class GameManager : MonoBehaviour
         }
         else
         {
+            ColorBlock colors = keypad_buttons[0].colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = new Color32(245, 245, 245, 255);
+            keypad_buttons[Array.IndexOf(keypad_values, pi[cursor] - 48)].colors = colors;
+            Debug.Log(Array.IndexOf(keypad_values, pi[cursor] - 48));
             GameOver();
         }
     }
-
     private void GameOver()
+    {
+        cursor = 0;
+        user_input.text = "";
+    }
+    private void GameClear()
     {
         cursor = 0;
         user_input.text = "";
