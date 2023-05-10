@@ -238,42 +238,41 @@ public class GameManager : MonoBehaviour
         {
             if (setting_values[2] == 0 && setting_values[3] == 0)
             {
-                if (setting_values[1] == 1)
-                {
-                    ColorBlock colors = keypad_buttons[0].colors;
-                    colors.normalColor = Color.white;
-                    colors.highlightedColor = new Color32(245, 245, 245, 255);
-                    keypad_buttons[Array.IndexOf(keypad_values, pi[cursor] - 48)].colors = colors;
-                    GameOver();
-                    colors.normalColor = Color.red;
-                    colors.highlightedColor = new Color32(255, 100, 100, 255);
-                    keypad_buttons[Array.IndexOf(keypad_values, pi[cursor] - 48)].colors = colors;
-                }
-                else
-                {
-                    GameOver();
-                }
+                GameOver();
             }
         }
     }
     private void GameOver()
     {
+        if (setting_values[1] == 1)
+        {
+            ColorBlock colors = keypad_buttons[0].colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = new Color32(245, 245, 245, 255);
+            keypad_buttons[Array.IndexOf(keypad_values, pi[cursor] - 48)].colors = colors;
+        }
         gameOn = false;
         panels[0].SetActive(true);
         result_text.text = "Your Score:\n";
         if (setting_values[2] == 0 && setting_values[3] != 0)
         {
-            result_text.text += seconds.ToString();
+            result_text.text += seconds.ToString() + "s";
         }
         else
         {
-            result_text.text += cursor.ToString();
+            result_text.text += cursor.ToString() + " digits";
         }
         cursor = 0;
         user_input_text.text = "";
         timeValue = timer_values[setting_values[2]];
         seconds = MathF.Floor(timeValue * 10) / 10;
         timer_text.text = seconds.ToString();
-
+        if (setting_values[1] == 1)
+        {
+            ColorBlock colors = keypad_buttons[0].colors;
+            colors.normalColor = Color.red;
+            colors.highlightedColor = new Color32(255, 100, 100, 255);
+            keypad_buttons[Array.IndexOf(keypad_values, pi[cursor] - 48)].colors = colors;
+        }
     }
 }
