@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     private string pi;
     private int cursor;
     private float seconds;
+    private float[] highscore_values = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     private string[] panels_names = { "Menu", "PiDigits", "Setting", "Highscore" };
     private string[] setting_names = {"Keypad","Guide", "Timer", "Speedrun" };
     private string[,] setting_options = { { "Flip", "Flip", "/", "/" }, { "Off", "On", "/", "/" }, { "X", "30s", "60s", "/" }, { "X", "100", "150", "200" } };
@@ -17,10 +18,10 @@ public class GameManager : MonoBehaviour
     private int[] setting_values_max = { 1, 1, 2, 3 };
     private float[] timer_values = { 0.0f, 30.0f, 60.0f };
     private int[] keypad_values = { -1, 0, -1, 7, 8, 9, 4, 5, 6, 1, 2, 3 };
-    private string[] highscores_text = { "Guide_30s_" };
     private Button[] setting_buttons;
     private TextMeshProUGUI[] setting_buttons_texts;
     private TextMeshProUGUI[] keypad_buttons_texts;
+    private TextMeshProUGUI[] highscore_texts;
     public TextMeshProUGUI user_input_text;
     public TextMeshProUGUI timer_text;
     public TextMeshProUGUI result_text;
@@ -29,6 +30,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         gameOn = true;
+        highscore_texts = new TextMeshProUGUI[12];
         panels = new GameObject[4];
         keypad_buttons = new Button[12];
         keypad_buttons_texts = new TextMeshProUGUI[12];
@@ -55,6 +57,11 @@ public class GameManager : MonoBehaviour
             keypad_buttons[i] = GameObject.Find("Button_" + i).GetComponent<Button>();
             keypad_buttons[i].onClick.AddListener(delegate { keypad_clicked(copy); });
             keypad_buttons_texts[i] = GameObject.Find("Text_" + i).GetComponent<TextMeshProUGUI>();
+            highscore_texts[i] = GameObject.Find("Highscore_Value_" + i).GetComponent<TextMeshProUGUI>();
+            if (PlayerPrefs.HasKey(i.ToString()))
+            {
+                highscore_values[i] = PlayerPrefs.GetFloat(i.ToString());
+            }
         }
         for (int i = 0; i < 4; i++)
         {
@@ -110,6 +117,20 @@ public class GameManager : MonoBehaviour
     {
         gameOn = false;
         panels[index].SetActive(true);
+        if (index == 3)
+        {
+            for (int i = 0; i < 12; i++)
+            {
+                highscore_texts[i].text = highscore_values[i].ToString();
+                if (i % 6 >= 3)
+                {
+                    highscore_texts[i].text += "s";
+                } else
+                {
+                    highscore_texts[i].text += " digits";
+                }
+            }
+        }
     }
 
     private void setting_toggle(int index)
@@ -256,10 +277,20 @@ public class GameManager : MonoBehaviour
         result_text.text = "Your Score:\n";
         if (setting_values[2] == 0 && setting_values[3] != 0)
         {
+            if (highscore_values[setting_values[1] * 6 + setting_values[3] + 2] > seconds)
+            {
+                highscore_values[setting_values[1] * 6 + setting_values[3] + 2] = seconds;
+                PlayerPrefs.SetFloat((setting_values[1] * 6 + setting_values[3] + 2).ToString(), seconds);
+            }
             result_text.text += seconds.ToString() + "s";
         }
         else
         {
+            if (highscore_values[setting_values[1] * 6 + setting_values[2]] < cursor)
+            {
+                highscore_values[setting_values[1] * 6 + setting_values[2]] = cursor;
+                PlayerPrefs.SetFloat((setting_values[1] * 6 + setting_values[2]).ToString(), cursor);
+            }
             result_text.text += cursor.ToString() + " digits";
         }
         cursor = 0;
