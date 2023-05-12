@@ -5,6 +5,7 @@ using System;
 
 public class GameManager : MonoBehaviour
 {
+    public MyButton[] mybutton;
     private ColorBlock colors;
     private float timeValue;
     private bool gameOn;
@@ -34,6 +35,7 @@ public class GameManager : MonoBehaviour
         highscore_texts = new TextMeshProUGUI[12];
         panels = new GameObject[4];
         keypad_buttons = new Button[12];
+        mybutton = new MyButton[12];
         keypad_buttons_texts = new TextMeshProUGUI[12];
         setting_buttons = new Button[4];
         setting_buttons_texts = new TextMeshProUGUI[4];
@@ -55,6 +57,7 @@ public class GameManager : MonoBehaviour
                     GameObject.Find("Menu_" + panels_names[i] + "_Toggle").GetComponent<Button>().onClick.AddListener(delegate { open_panel(copy); });
                 }
             }
+            mybutton[i] = GameObject.Find("Button_" + i).GetComponent<MyButton>();
             keypad_buttons[i] = GameObject.Find("Button_" + i).GetComponent<Button>();
             keypad_buttons[i].onClick.AddListener(delegate { keypad_clicked(copy); });
             keypad_buttons_texts[i] = GameObject.Find("Text_" + i).GetComponent<TextMeshProUGUI>();
@@ -85,7 +88,7 @@ public class GameManager : MonoBehaviour
                 }
                 else
                 {
-                    GameOver();
+                    GameOver(true);
                     timeValue = timer_values[setting_values[2]];
                     seconds = MathF.Floor(timeValue * 10) / 10;
                     timer_text.text = seconds.ToString();
@@ -95,6 +98,10 @@ public class GameManager : MonoBehaviour
                 timeValue += Time.deltaTime;
                 seconds = MathF.Floor(timeValue * 10) / 10;
                 timer_text.text = seconds.ToString();
+            }
+            if (mybutton[0].buttonPressed && mybutton[2].buttonPressed)
+            {
+                GameOver(false);
             }
         }
     }
@@ -233,7 +240,7 @@ public class GameManager : MonoBehaviour
             {
                 if (int.Parse(setting_options[3, setting_values[3]]) == cursor + 1)
                 {
-                    GameOver();
+                    GameOver(true);
                     return;
                 }
             }
@@ -246,11 +253,11 @@ public class GameManager : MonoBehaviour
                 colors.highlightedColor = new Color32(255, 100, 100, 255);
                 keypad_buttons[Array.IndexOf(keypad_values, pi[cursor + 1] - 48)].colors = colors;
             }
-            user_input_text.text += pi[cursor];
-            if (cursor == 100)
+            if (cursor % 18 == 0)
             {
-                user_input_text.fontSize = 50.0f;
+                user_input_text.text = "";
             }
+            user_input_text.text += pi[cursor];
             if (cursor == 0)
             {
                 user_input_text.text += ".";
@@ -261,11 +268,11 @@ public class GameManager : MonoBehaviour
         {
             if (setting_values[2] == 0 && setting_values[3] == 0)
             {
-                GameOver();
+                GameOver(true);
             }
         }
     }
-    private void GameOver()
+    private void GameOver(bool not_escape)
     {
         if (setting_values[1] == 1)
         {
@@ -275,24 +282,30 @@ public class GameManager : MonoBehaviour
         }
         gameOn = false;
         panels[0].SetActive(true);
-        result_text.text = "Your Score:\n";
-        if (setting_values[3] != 0)
+        if (not_escape)
         {
-            if (highscore_values[setting_values[1] * 6 + setting_values[3] + 2] > seconds || highscore_values[setting_values[1] * 6 + setting_values[3] + 2] == 0)
+            result_text.text = "Your Score:\n";
+            if (setting_values[3] != 0)
             {
-                highscore_values[setting_values[1] * 6 + setting_values[3] + 2] = seconds;
-                PlayerPrefs.SetFloat((setting_values[1] * 6 + setting_values[3] + 2).ToString(), seconds);
+                if (highscore_values[setting_values[1] * 6 + setting_values[3] + 2] > seconds || highscore_values[setting_values[1] * 6 + setting_values[3] + 2] == 0)
+                {
+                    highscore_values[setting_values[1] * 6 + setting_values[3] + 2] = seconds;
+                    PlayerPrefs.SetFloat((setting_values[1] * 6 + setting_values[3] + 2).ToString(), seconds);
+                }
+                result_text.text += seconds.ToString() + "s";
             }
-            result_text.text += seconds.ToString() + "s";
-        }
-        else
+            else
+            {
+                if (highscore_values[setting_values[1] * 6 + setting_values[2]] < cursor)
+                {
+                    highscore_values[setting_values[1] * 6 + setting_values[2]] = cursor;
+                    PlayerPrefs.SetFloat((setting_values[1] * 6 + setting_values[2]).ToString(), cursor);
+                }
+                result_text.text += cursor.ToString() + " digits";
+            }
+        } else
         {
-            if (highscore_values[setting_values[1] * 6 + setting_values[2]] < cursor)
-            {
-                highscore_values[setting_values[1] * 6 + setting_values[2]] = cursor;
-                PlayerPrefs.SetFloat((setting_values[1] * 6 + setting_values[2]).ToString(), cursor);
-            }
-            result_text.text += cursor.ToString() + " digits";
+            result_text.text = "You Gave Up!";
         }
         cursor = 0;
         user_input_text.text = "";
