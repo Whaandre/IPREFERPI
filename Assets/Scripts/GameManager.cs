@@ -5,6 +5,7 @@ using System;
 
 public class GameManager : MonoBehaviour
 {
+    private ColorBlock colors;
     private float timeValue;
     private bool gameOn;
     private string pi;
@@ -63,6 +64,7 @@ public class GameManager : MonoBehaviour
                 highscore_values[i] = PlayerPrefs.GetFloat(i.ToString());
             }
         }
+        colors = keypad_buttons[0].colors;
         for (int i = 0; i < 4; i++)
         {
             panels[i].SetActive(false);
@@ -156,7 +158,6 @@ public class GameManager : MonoBehaviour
         {
             if (setting_values[1] == 1)
             {
-                ColorBlock colors = keypad_buttons[0].colors;
                 colors.normalColor = Color.white;
                 colors.highlightedColor = new Color32(245, 245, 245, 255);
                 keypad_buttons[Array.IndexOf(keypad_values, pi[cursor] - 48)].colors = colors;
@@ -175,7 +176,6 @@ public class GameManager : MonoBehaviour
             }
             if (setting_values[1] == 1)
             {
-                ColorBlock colors = keypad_buttons[0].colors;
                 colors.normalColor = Color.red;
                 colors.highlightedColor = new Color32(255, 100, 100, 255);
                 keypad_buttons[Array.IndexOf(keypad_values, pi[cursor] - 48)].colors = colors;
@@ -184,13 +184,11 @@ public class GameManager : MonoBehaviour
         {
             if (setting_values[1] == 0)
             {
-                ColorBlock colors = keypad_buttons[0].colors;
                 colors.normalColor = Color.white;
                 colors.highlightedColor = new Color32(245, 245, 245, 255);
                 keypad_buttons[Array.IndexOf(keypad_values, pi[cursor] - 48)].colors = colors;
             } else
             {
-                ColorBlock colors = keypad_buttons[0].colors;
                 colors.normalColor = Color.red;
                 colors.highlightedColor = new Color32(255, 100, 100, 255);
                 keypad_buttons[Array.IndexOf(keypad_values, pi[cursor] - 48)].colors = colors;
@@ -231,9 +229,16 @@ public class GameManager : MonoBehaviour
         input += 48;
         if (input == pi[cursor])
         {
+            if (setting_values[3] != 0)
+            {
+                if (int.Parse(setting_options[3, setting_values[3]]) == cursor + 1)
+                {
+                    GameOver();
+                    return;
+                }
+            }
             if (setting_values[1] == 1)
             {
-                ColorBlock colors = keypad_buttons[0].colors;
                 colors.normalColor = Color.white;
                 colors.highlightedColor = new Color32(245, 245, 245, 255);
                 keypad_buttons[Array.IndexOf(keypad_values, pi[cursor] - 48)].colors = colors;
@@ -241,14 +246,11 @@ public class GameManager : MonoBehaviour
                 colors.highlightedColor = new Color32(255, 100, 100, 255);
                 keypad_buttons[Array.IndexOf(keypad_values, pi[cursor + 1] - 48)].colors = colors;
             }
-            if (setting_values[3] != 0)
-            {
-                if (int.Parse(setting_options[3, setting_values[3]]) == cursor + 1)
-                {
-                    GameOver();
-                }
-            }
             user_input_text.text += pi[cursor];
+            if (cursor == 100)
+            {
+                user_input_text.fontSize = 50.0f;
+            }
             if (cursor == 0)
             {
                 user_input_text.text += ".";
@@ -267,7 +269,6 @@ public class GameManager : MonoBehaviour
     {
         if (setting_values[1] == 1)
         {
-            ColorBlock colors = keypad_buttons[0].colors;
             colors.normalColor = Color.white;
             colors.highlightedColor = new Color32(245, 245, 245, 255);
             keypad_buttons[Array.IndexOf(keypad_values, pi[cursor] - 48)].colors = colors;
@@ -275,9 +276,9 @@ public class GameManager : MonoBehaviour
         gameOn = false;
         panels[0].SetActive(true);
         result_text.text = "Your Score:\n";
-        if (setting_values[2] == 0 && setting_values[3] != 0)
+        if (setting_values[3] != 0)
         {
-            if (highscore_values[setting_values[1] * 6 + setting_values[3] + 2] > seconds)
+            if (highscore_values[setting_values[1] * 6 + setting_values[3] + 2] > seconds || highscore_values[setting_values[1] * 6 + setting_values[3] + 2] == 0)
             {
                 highscore_values[setting_values[1] * 6 + setting_values[3] + 2] = seconds;
                 PlayerPrefs.SetFloat((setting_values[1] * 6 + setting_values[3] + 2).ToString(), seconds);
@@ -300,7 +301,6 @@ public class GameManager : MonoBehaviour
         timer_text.text = seconds.ToString();
         if (setting_values[1] == 1)
         {
-            ColorBlock colors = keypad_buttons[0].colors;
             colors.normalColor = Color.red;
             colors.highlightedColor = new Color32(255, 100, 100, 255);
             keypad_buttons[Array.IndexOf(keypad_values, pi[cursor] - 48)].colors = colors;
